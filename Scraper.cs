@@ -20,8 +20,15 @@ namespace WebScraperForDisneyMovies
             {
                 throw new NullReferenceException("docNodes is null");
             }
+
+            int i = 0, nodeCollectionLength = docNodes.ToArray().Length;
+
+            Console.WriteLine("Scraping the data...");
             foreach (var item in docNodes)
             {
+                i++;
+                // Update progress bar
+                UpdateProgressBar(i, nodeCollectionLength);
                 try
                 {
                     if (item is null)
@@ -138,7 +145,36 @@ namespace WebScraperForDisneyMovies
 
                 }
             }
+            Console.WriteLine("\nScraping Stage completed.");
             return movies;
         }
+
+
+        private static void UpdateProgressBar(int currentIteration, int totalIterations)
+        {
+            const int progressBarWidth = 50;
+
+            // Calculate the progress percentage
+            double progressPercentage = (double)currentIteration / totalIterations;
+
+            // Calculate the number of filled and empty slots in the progress bar
+            int filledSlots = (int)(progressPercentage * progressBarWidth);
+            int emptySlots = progressBarWidth - filledSlots;
+
+            // Build the progress bar string
+            string progressBar = "[" + new string('#', filledSlots) + new string('-', emptySlots) + "]";
+
+            // Calculate and format the progress percentage
+            int percentage = (int)(progressPercentage * 100);
+            string percentageString = percentage.ToString("D2") + "%";
+
+            // Print the progress bar and percentage
+            Console.CursorLeft = 0;
+            Console.Write(progressBar);
+            Console.CursorLeft = progressBarWidth + 1;
+            Console.Write("  " + percentageString);
+        }
+
+
     }
 }

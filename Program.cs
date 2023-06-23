@@ -1,4 +1,5 @@
-﻿namespace WebScraperForDisneyMovies
+﻿
+namespace WebScraperForDisneyMovies
 {
 
     public class Program
@@ -11,14 +12,16 @@
             list = "/list/ls059383351/",
             xPath = "//*[@class='lister-item mode-detail']";
             movies = Scraper.ScrapeData(site, list, xPath);
+
             using var db = new MovieDatabaseContext();
+
+            //Write            
             foreach (var movie in movies)
             {
                 Console.WriteLine($"adding \"{movie.title}\" to the database...");
                 db.Add(movie);
                 db.SaveChanges();
             }
-
 
             // Read
             Console.WriteLine("Querying for a Movie");
