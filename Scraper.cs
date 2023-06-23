@@ -33,7 +33,6 @@ namespace WebScraperForDisneyMovies
                 {
                     if (item is null)
                     {
-                        Console.WriteLine("one item is null. going to the next one...");
                         continue;
                     }
                     //LINK
