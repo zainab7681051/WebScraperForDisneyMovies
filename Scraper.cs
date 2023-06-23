@@ -32,7 +32,6 @@ namespace WebScraperForDisneyMovies
                     //LINK
                     link = item.Element("div").NextSibling.NextSibling
                     .Element("h3").ChildNodes["a"].Attributes["href"].Value.Trim();
-                    Console.WriteLine("link :{0}", link);
 
                     //TITLE
                     title = item.Element("div").NextSibling.NextSibling
@@ -53,7 +52,6 @@ namespace WebScraperForDisneyMovies
                         if (property == "og:image")
                         {
                             image = metaTag.GetAttributeValue("content", "not found");
-                            Console.WriteLine(image.Trim());
                         }
                     }
 

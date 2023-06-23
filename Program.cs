@@ -11,25 +11,25 @@
             list = "/list/ls059383351/",
             xPath = "//*[@class='lister-item mode-detail']";
             movies = Scraper.ScrapeData(site, list, xPath);
-            // using var db = new MovieDatabaseContext();
+            using var db = new MovieDatabaseContext();
             foreach (var movie in movies)
             {
                 Console.WriteLine($"adding \"{movie.title}\" to the database...");
-                //     db.Add(movie);
-                //     db.SaveChanges();
+                db.Add(movie);
+                db.SaveChanges();
             }
 
 
             // Read
-            // Console.WriteLine("Querying for a Movie");
-            // var FoundMovie = db.disney_movies
-            //     .Find(19);
-            // if (FoundMovie is null)
-            // {
-            //     throw new NullReferenceException("wrong Id parameter or movie is not present in the database");
+            Console.WriteLine("Querying for a Movie");
+            var FoundMovie = db.disney_movies
+                .Find(19);
+            if (FoundMovie is null)
+            {
+                throw new NullReferenceException("wrong Id parameter or movie is not present in the database");
 
-            // }
-            // Console.WriteLine(FoundMovie.title + "\t" + FoundMovie.year + "\n" + FoundMovie.directors + "\n\t---------------------------");
+            }
+            Console.WriteLine(FoundMovie.title + "\t" + FoundMovie.year + "\n" + FoundMovie.directors + "\n\t---------------------------");
         }
 
     }
