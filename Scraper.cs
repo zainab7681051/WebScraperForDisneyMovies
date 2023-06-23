@@ -111,11 +111,11 @@ namespace WebScraperForDisneyMovies
 
                         if (stackT.Contains("line 48"))
                             year = "";
-                        if (stackT.Contains("line 57"))
+                        if (stackT.Contains("line 56"))
                             genre = "";
-                        if (stackT.Contains("line 59"))
+                        if (stackT.Contains("line 58"))
                             runtime = "";
-                        if (stackT.Contains("line 69"))
+                        if (stackT.Contains("line 68"))
                             metascore = "";
                     }
                     else

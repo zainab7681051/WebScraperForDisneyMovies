@@ -24,7 +24,7 @@ namespace WebScraperForDisneyMovies
             }
 
             // Read
-            Console.WriteLine("Querying for a Movie");
+            Console.WriteLine("\nQuerying for a Movie");
             var FoundMovie = db.disney_movies
                 .Find(19);
             if (FoundMovie is null)
