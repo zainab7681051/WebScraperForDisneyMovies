@@ -49,18 +49,6 @@ namespace WebScraperForDisneyMovies
                     .Element("h3").Elements("span").Where(i => i.HasClass("lister-item-year"))
                     .Single().InnerText.Trim();
 
-                    //IMAGE
-                    var newTab = web.Load(site + link);
-                    var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
-
-                    foreach (var metaTag in metaTags)
-                    {
-                        string property = metaTag.GetAttributeValue("property", "not found");
-                        if (property == "og:image")
-                        {
-                            image = metaTag.GetAttributeValue("content", "not found");
-                        }
-                    }
 
                     // //GENRE AND RUNTIME
                     var detail = item.Element("div").NextSibling.NextSibling.Element("h3")
@@ -102,6 +90,18 @@ namespace WebScraperForDisneyMovies
                     var starsMatch = Regex.Match(cast, starsPattern, RegexOptions.Singleline);
                     stars = starsMatch.Groups[1].Value.Trim();
 
+                    //IMAGE
+                    var newTab = web.Load(site + link);
+                    var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
+
+                    foreach (var metaTag in metaTags)
+                    {
+                        string property = metaTag.GetAttributeValue("property", "not found");
+                        if (property == "og:image")
+                        {
+                            image = metaTag.GetAttributeValue("content", "not found");
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -110,13 +110,13 @@ namespace WebScraperForDisneyMovies
                     if (eType == "System.NullReferenceException")
                     {
 
-                        if (stackT.Contains("line 51"))
+                        if (stackT.Contains("line 48"))
                             year = "";
-                        if (stackT.Contains("line 66"))
+                        if (stackT.Contains("line 57"))
                             genre = "";
-                        if (stackT.Contains("line 68"))
+                        if (stackT.Contains("line 59"))
                             runtime = "";
-                        if (stackT.Contains("line 78"))
+                        if (stackT.Contains("line 69"))
                             metascore = "";
                     }
                     else
@@ -145,7 +145,7 @@ namespace WebScraperForDisneyMovies
 
                 }
             }
-            Console.WriteLine("\nScraping Stage completed.");
+            Console.WriteLine("\nScraping Stage completed.\n");
             return movies;
         }
 
@@ -154,21 +154,16 @@ namespace WebScraperForDisneyMovies
         {
             const int progressBarWidth = 50;
 
-            // Calculate the progress percentage
             double progressPercentage = (double)currentIteration / totalIterations;
 
-            // Calculate the number of filled and empty slots in the progress bar
             int filledSlots = (int)(progressPercentage * progressBarWidth);
             int emptySlots = progressBarWidth - filledSlots;
 
-            // Build the progress bar string
             string progressBar = "[" + new string('#', filledSlots) + new string('-', emptySlots) + "]";
 
-            // Calculate and format the progress percentage
             int percentage = (int)(progressPercentage * 100);
             string percentageString = percentage.ToString("D2") + "%";
 
-            // Print the progress bar and percentage
             Console.CursorLeft = 0;
             Console.Write(progressBar);
             Console.CursorLeft = progressBarWidth + 1;
