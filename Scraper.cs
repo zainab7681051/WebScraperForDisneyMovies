@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace WebScraperForDisneyMovies
 {
@@ -11,11 +12,16 @@ namespace WebScraperForDisneyMovies
             string title = "", year = "", link = "",
                 image = "", runtime = "", genre = "",
                 summary = "", rating = "", metascore = "",
-                directors = "", stars = "";
+                cast = "", directors = "", stars = "",
+                directorsPattern = @"Director(?:s)?:\s*(.*?)(?:\s*\||$)",
+                starsPattern = @"Stars:\s*(.*?)(?:\s*\||$)";
 
-            var web = new HtmlAgilityPack.HtmlWeb();
-            var doc = web.Load(url);
-            var docNodes = doc.DocumentNode.SelectNodes(xPath);
+
+            HtmlAgilityPack.HtmlWeb web = new HtmlAgilityPack.HtmlWeb();
+            HtmlDocument doc = web.Load(url);
+            HtmlDocument newTab;
+            HtmlNodeCollection metaTags;
+            HtmlNodeCollection docNodes = doc.DocumentNode.SelectNodes(xPath);
             if (docNodes is null)
             {
                 throw new NullReferenceException("docNodes is null");
@@ -43,7 +49,7 @@ namespace WebScraperForDisneyMovies
                     title = item.Element("div").NextSibling.NextSibling
                     .Element("h3").ChildNodes["a"].InnerText.Trim();
 
-                    // //YEAR
+                    // // //YEAR
                     year = item.Element("div").NextSibling.NextSibling
                     .Element("h3").Elements("span").Where(i => i.HasClass("lister-item-year"))
                     .Single().InnerText.Trim();
@@ -74,12 +80,10 @@ namespace WebScraperForDisneyMovies
                         .NextSibling.NextSibling.NextSibling.NextSibling.InnerText.Trim();
 
                     // //CAST(DIRECTORS & STARS)
-                    var cast = item.Element("div")
+                    cast = item.Element("div")
                         .NextSibling.NextSibling.Element("div")
                         .NextSibling.NextSibling.NextSibling
                         .NextSibling.NextSibling.NextSibling.InnerText.Trim();
-                    string directorsPattern = @"Director(?:s)?:\s*(.*?)(?:\s*\||$)";
-                    string starsPattern = @"Stars:\s*(.*?)(?:\s*\||$)";
 
                     // Extract Directors
                     var directorsMatch = Regex.Match(cast, directorsPattern, RegexOptions.Singleline);
@@ -89,9 +93,9 @@ namespace WebScraperForDisneyMovies
                     var starsMatch = Regex.Match(cast, starsPattern, RegexOptions.Singleline);
                     stars = starsMatch.Groups[1].Value.Trim();
 
-                    //IMAGE
-                    var newTab = web.Load(site + link);
-                    var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
+                    // //IMAGE
+                    newTab = web.Load(site + link);
+                    metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
 
                     foreach (var metaTag in metaTags)
                     {
