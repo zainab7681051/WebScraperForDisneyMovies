@@ -102,19 +102,19 @@ namespace WebScraperForDisneyMovies
                 var web = new HtmlAgilityPack.HtmlWeb();
                 var newTab = await Task.Run(() => web.Load(site + link));
                 var metaTags = await Task.Run(() => newTab.DocumentNode.SelectNodes("/html/head/meta"));
-                // image = await Task.Run(string () =>
-                // {
-                //     foreach (var metaTag in metaTags)
-                //     {
-                //         string property = metaTag.GetAttributeValue("property", "not found");
-                //         if (property == "og:image")
-                //         {
-                //             return metaTag.GetAttributeValue("content", "not found");
-                //         }
-                //     }
-                //     return null;
-                // });
-                // if (image is null) image = " ";
+                image = await Task.Run(string () =>
+                {
+                    foreach (var metaTag in metaTags)
+                    {
+                        string property = metaTag.GetAttributeValue("property", "not found");
+                        if (property == "og:image")
+                        {
+                            return metaTag.GetAttributeValue("content", "not found");
+                        }
+                    }
+                    return null;
+                });
+                if (image is null) image = " ";
 
             }
             catch (Exception e)
