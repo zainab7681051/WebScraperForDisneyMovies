@@ -5,13 +5,13 @@ namespace WebScraperForDisneyMovies
 {
     public class Scraper
     {
-        public List<Movie> ScrapeData(string site, string list, string xPath)
+        public async Task<List<Movie>> ScrapeData(string site, string list, string xPath)
         {
             List<Movie> movies = new();
             string url = site + list;
             var web = new HtmlAgilityPack.HtmlWeb();
-            var doc = web.Load(url);
-            var docNodes = doc.DocumentNode.SelectNodes(xPath);
+            var doc = await Task.Run(() => web.Load(url));
+            var docNodes = await Task.Run(() => doc.DocumentNode.SelectNodes(xPath));
             if (docNodes is null)
             {
                 throw new NullReferenceException("docNodes is null");
@@ -24,7 +24,7 @@ namespace WebScraperForDisneyMovies
             for (int i = 0; i < nodeCollectionLength; i++)
             {
                 UpdateProgressBar(i, nodeCollectionLength - 1);
-                Movie movie = ScrapePage(docNodes[i], site);
+                Movie movie = await Task.Run(() => ScrapePage(docNodes[i], site));
                 if (movie is null) continue;
                 movies.Add(movie);
             }
@@ -32,7 +32,7 @@ namespace WebScraperForDisneyMovies
             return movies;
         }
 
-        private Movie ScrapePage(HtmlNode item, string site)
+        private async Task<Movie> ScrapePage(HtmlNode item, string site)
         {
             string title = "", year = "", link = "",
                 image = "", runtime = "", genre = "",
@@ -100,17 +100,22 @@ namespace WebScraperForDisneyMovies
 
                 // //IMAGE
                 var web = new HtmlAgilityPack.HtmlWeb();
-                var newTab = web.Load(site + link);
-                var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
+                var newTab = await Task.Run(() => web.Load(site + link));
+                var metaTags = await Task.Run(() => newTab.DocumentNode.SelectNodes("/html/head/meta"));
+                // image = await Task.Run(string () =>
+                // {
+                //     foreach (var metaTag in metaTags)
+                //     {
+                //         string property = metaTag.GetAttributeValue("property", "not found");
+                //         if (property == "og:image")
+                //         {
+                //             return metaTag.GetAttributeValue("content", "not found");
+                //         }
+                //     }
+                //     return null;
+                // });
+                // if (image is null) image = " ";
 
-                foreach (var metaTag in metaTags)
-                {
-                    string property = metaTag.GetAttributeValue("property", "not found");
-                    if (property == "og:image")
-                    {
-                        image = metaTag.GetAttributeValue("content", "not found");
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -119,14 +124,14 @@ namespace WebScraperForDisneyMovies
                 if (eType == "System.NullReferenceException")
                 {
 
-                    if (stackT.Contains("line 48"))
-                        year = "";
-                    if (stackT.Contains("line 56"))
-                        genre = "";
                     if (stackT.Contains("line 58"))
-                        runtime = "";
-                    if (stackT.Contains("line 68"))
-                        metascore = "";
+                        year = " ";
+                    if (stackT.Contains("line 67"))
+                        genre = " ";
+                    if (stackT.Contains("line 69"))
+                        runtime = " ";
+                    if (stackT.Contains("line 79"))
+                        metascore = " ";
                 }
                 else
                 {

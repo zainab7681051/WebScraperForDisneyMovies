@@ -4,7 +4,7 @@ namespace WebScraperForDisneyMovies
 {
     public class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Stopwatch sw = new();
             sw.Start();
@@ -13,7 +13,7 @@ namespace WebScraperForDisneyMovies
             list = "/list/ls059383351/",
             xPath = "//*[@class='lister-item mode-detail']";
             var scraper = new Scraper();
-            movies = scraper.ScrapeData(site, list, xPath);
+            movies = await scraper.ScrapeData(site, list, xPath);
 
             using var db = new MovieDatabaseContext();
 
