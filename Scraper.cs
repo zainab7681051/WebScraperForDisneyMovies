@@ -47,56 +47,56 @@ namespace WebScraperForDisneyMovies
             }
             //LINK
             link = item.Element("div")?.NextSibling?.NextSibling?
-            .Element("h3")?.ChildNodes["a"]?.Attributes["href"]?.Value?.Trim();
+            .Element("h3")?.ChildNodes["a"]?.Attributes["href"]?.Value?.Trim() ?? "no link";
 
             //TITLE
             title = item.Element("div")?.NextSibling?.NextSibling
-            .Element("h3")?.ChildNodes["a"]?.InnerText?.Trim();
+            .Element("h3")?.ChildNodes["a"]?.InnerText?.Trim() ?? "no title";
 
             //YEAR
             year = item.Element("div")?.NextSibling?.NextSibling?
             .Element("h3")?.Elements("span")?.Where(i => i.HasClass("lister-item-year"))
-            .Single().InnerText?.Trim();
+            .Single().InnerText?.Trim() ?? "no year";
 
 
             // GENRE AND RUNTIME
             var detail = item.Element("div")?.NextSibling?.NextSibling?.Element("h3")?
             .NextSibling?.NextSibling?.ChildNodes;
 
-            genre = detail?.Where(d => d.HasClass("genre")).Single()?.InnerText?.Trim();
+            genre = detail?.Where(d => d.HasClass("genre")).Single()?.InnerText?.Trim() ?? "no genre";
 
-            runtime = detail?.Where(d => d.HasClass("runtime")).Single()?.InnerText?.Trim();
+            runtime = detail?.Where(d => d.HasClass("runtime")).Single()?.InnerText?.Trim() ?? "no runtime";
 
             // RATING
             rating = item.Element("div")?
                 .NextSibling?.NextSibling?.Element("div")?
                 .Element("div")?
                 .ChildNodes?.Where(d => d.HasClass("ipl-rating-star__rating"))?
-                .Single()?.InnerText?.Trim();
+                .Single()?.InnerText?.Trim() ?? "no rating";
 
             // //METASCORE
             metascore = item.Element("div")?
             .NextSibling?.NextSibling?.Element("div")?
-            .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim();
+            .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim() ?? "no metascore";
 
             //SUMMARY
             summary = item.Element("div")?
                 .NextSibling?.NextSibling?.Element("div")?
-                .NextSibling?.NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim();
+                .NextSibling?.NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no summary";
 
             //CAST(DIRECTORS & STARS)
             cast = item.Element("div")?
                 .NextSibling?.NextSibling?.Element("div")?
                 .NextSibling?.NextSibling?.NextSibling?
-                .NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim();
+                .NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no cast";
 
             // Extract Directors
             var directorsMatch = Regex.Match(cast, directorsPattern, RegexOptions.Singleline);
-            directors = directorsMatch.Groups[1].Value.Trim();
+            directors = directorsMatch.Groups[1].Value.Trim() ?? "no directors";
 
             //  Extract Stars
             var starsMatch = Regex.Match(cast, starsPattern, RegexOptions.Singleline);
-            stars = starsMatch.Groups[1].Value.Trim();
+            stars = starsMatch.Groups[1].Value.Trim() ?? "no stars";
 
             //IMAGE
             var web = new HtmlAgilityPack.HtmlWeb();
