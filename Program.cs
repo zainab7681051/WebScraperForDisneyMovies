@@ -9,7 +9,7 @@ namespace WebScraperForDisneyMovies
             Stopwatch sw = new();
             sw.Start();
             List<Movie> movies = new();
-            string site = "https://www.imdb.com",
+            const string site = "https://www.imdb.com",
             list = "/list/ls059383351/",
             xPath = "//*[@class='lister-item mode-detail']";
             var scraper = new Scraper();

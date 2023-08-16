@@ -12,6 +12,10 @@ namespace WebScraperForDisneyMovies
         }
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite($"Data Source={DbPath}");
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.UseCollation("NOCASE");
+        }
 
     }
 }
