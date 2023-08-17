@@ -33,7 +33,7 @@ namespace WebScraperForDisneyMovies
                 throw new NullReferenceException("disney_movies table is null; does not exist");
             }
             var FoundMovie = db.disney_movies
-                .Find(19);
+                .Find(10);
             if (FoundMovie is null)
             {
                 throw new NullReferenceException("wrong Id parameter or movie is not present in the database");

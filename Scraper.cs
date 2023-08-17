@@ -80,23 +80,27 @@ namespace WebScraperForDisneyMovies
             .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim() ?? "no metascore";
 
             //SUMMARY
+            // summary = item.Element("div")?
+            //     .NextSibling?.NextSibling?.Element("div")?
+            //     .NextSibling?.NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no summary";
             summary = item.Element("div")?
-                .NextSibling?.NextSibling?.Element("div")?
-                .NextSibling?.NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no summary";
+                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling.InnerText.Trim() ?? "no summary";
 
             //CAST(DIRECTORS & STARS)
             cast = item.Element("div")?
-                .NextSibling?.NextSibling?.Element("div")?
-                .NextSibling?.NextSibling?.NextSibling?
-                .NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no cast";
+                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling?
+                .PreviousSibling.InnerText?.Trim() ?? "no cast";
 
             // Extract Directors
             var directorsMatch = Regex.Match(cast, directorsPattern, RegexOptions.Singleline);
-            directors = directorsMatch.Groups[1].Value.Trim() ?? "no directors";
+            directors = directorsMatch.Groups[1].Value.Trim();
 
             //  Extract Stars
             var starsMatch = Regex.Match(cast, starsPattern, RegexOptions.Singleline);
-            stars = starsMatch.Groups[1].Value.Trim() ?? "no stars";
+            stars = starsMatch.Groups[1].Value.Trim();
 
             //IMAGE
             var web = new HtmlAgilityPack.HtmlWeb();
