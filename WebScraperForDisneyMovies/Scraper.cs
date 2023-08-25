@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 
@@ -5,12 +8,16 @@ namespace WebScraperForDisneyMovies
 {
     public class Scraper
     {
+        private readonly HtmlWeb _HtmlWeb;
+        public Scraper(HtmlWeb HtmlWeb)
+        {
+            _HtmlWeb = HtmlWeb;
+        }
         public List<Movie> ScrapeData(string site, string list, string xPath)
         {
             List<Movie> movies = new();
             string url = site + list;
-            var web = new HtmlAgilityPack.HtmlWeb();
-            var doc = web.Load(url);
+            var doc = _HtmlWeb.Load(url);
             var docNodes = doc.DocumentNode.SelectNodes(xPath);
             if (docNodes is null)
             {
@@ -103,8 +110,7 @@ namespace WebScraperForDisneyMovies
             stars = starsMatch.Groups[1].Value.Trim();
 
             //IMAGE
-            var web = new HtmlAgilityPack.HtmlWeb();
-            var newTab = web.Load(site + link);
+            var newTab = _HtmlWeb.Load(site + link);
             var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
             image = GetImage(metaTags);
 

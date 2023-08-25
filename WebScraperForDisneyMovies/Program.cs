@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using HtmlAgilityPack;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WebScraperForDisneyMovies
 {
@@ -6,13 +10,27 @@ namespace WebScraperForDisneyMovies
     {
         static void Main(string[] args)
         {
+
+            //service collection
+            var services = new ServiceCollection();
+
+            //Register the services
+            services.AddSingleton<HtmlWeb>(); // Register HtmlWeb as a singleton
+            services.AddTransient<Scraper>(); // Register Scraper as a transient service
+
+            // Build the service provider
+            var serviceProvider = services.BuildServiceProvider();
+
+            //Resolve and use the Scraper instance
+            using var scope = serviceProvider.CreateScope();
+            var scraper = scope.ServiceProvider.GetRequiredService<Scraper>();
+
             Stopwatch sw = new();
             sw.Start();
             List<Movie> movies = new();
             const string site = "https://www.imdb.com",
             list = "/list/ls059383351/",
             xPath = "//*[@class='lister-item mode-detail']";
-            var scraper = new Scraper();
             movies = scraper.ScrapeData(site, list, xPath);
 
             using var db = new MovieDatabaseContext();
@@ -43,7 +61,6 @@ namespace WebScraperForDisneyMovies
             string ExecutionTimeTaken = string.Format("{0} minutes, {1}seconds", sw.Elapsed.Minutes, sw.Elapsed.Seconds);
 
             Console.WriteLine("\nprogram finished in: " + ExecutionTimeTaken);
-
 
         }
 
