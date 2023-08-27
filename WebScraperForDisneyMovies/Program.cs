@@ -51,12 +51,8 @@ namespace WebScraperForDisneyMovies
                 throw new NullReferenceException("disney_movies table is null; does not exist");
             }
             var FoundMovie = db.disney_movies
-                .Find(10);
-            if (FoundMovie is null)
-            {
-                throw new NullReferenceException("wrong Id parameter or movie is not present in the database");
-            }
-            Console.WriteLine(FoundMovie.title + "\t" + FoundMovie.year + "\n" + FoundMovie.directors + "\n\t---------------------------");
+                .Find(67) ?? throw new NullReferenceException("wrong Id parameter or movie is not present in the database");
+            Console.WriteLine(FoundMovie.title + "\t" + FoundMovie.year + "\n" + FoundMovie.image + "\n\t---------------------------");
             sw.Stop();
             string ExecutionTimeTaken = string.Format("{0} minutes, {1}seconds", sw.Elapsed.Minutes, sw.Elapsed.Seconds);
 

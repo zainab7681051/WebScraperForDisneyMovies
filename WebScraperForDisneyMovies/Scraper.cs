@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace WebScraperForDisneyMovies
 {
@@ -25,7 +28,6 @@ namespace WebScraperForDisneyMovies
             }
 
             int nodeCollectionLength = docNodes.ToArray().Length;
-            List<Movie> movieList = new();
 
             Console.WriteLine("\nScraping the data....");
             for (int i = 0; i < nodeCollectionLength; i++)
@@ -39,69 +41,49 @@ namespace WebScraperForDisneyMovies
             return movies;
         }
 
-        private Movie? ScrapePage(HtmlNode item, string site)
+        public Movie? ScrapePage(HtmlNode item, string site)
         {
             string? title, year, link,
                 image, runtime, genre,
                 summary, rating, metascore,
                 cast, directors, stars;
 
-            string directorsPattern = @"Director(?:s)?:\s*(.*?)(?:\s*\||$)",
-            starsPattern = @"Stars:\s*(.*?)(?:\s*\||$)";
             if (item is null)
             {
                 return null;
             }
             //LINK
-            link = item.Element("div")?.NextSibling?.NextSibling?
-            .Element("h3")?.ChildNodes["a"]?.Attributes["href"]?.Value?.Trim() ?? "no link";
+            link = GetLink(item);
 
             //TITLE
-            title = item.Element("div")?.NextSibling?.NextSibling
-            .Element("h3")?.ChildNodes["a"]?.InnerText?.Trim() ?? "no title";
+            title = GetTitle(item);
 
             //YEAR
-            year = item.Element("div")?.NextSibling?.NextSibling?
-            .Element("h3")?.Elements("span")?.Where(i => i.HasClass("lister-item-year"))
-            .Single().InnerText?.Trim() ?? "no year";
-
+            year = GetYear(item);
 
             // GENRE AND RUNTIME
-            var detail = item.Element("div")?.NextSibling?.NextSibling?.Element("h3")?
-            .NextSibling?.NextSibling?.ChildNodes;
+            var detail = GetGenreAndRuntime(item);
 
             genre = detail?.Where(d => d.HasClass("genre")).Single()?.InnerText?.Trim() ?? "no genre";
 
             runtime = detail?.Where(d => d.HasClass("runtime")).Single()?.InnerText?.Trim() ?? "no runtime";
 
             // RATING
-            rating = item.Element("div")?
-                .NextSibling?.NextSibling?.Element("div")?
-                .Element("div")?
-                .ChildNodes?.Where(d => d.HasClass("ipl-rating-star__rating"))?
-                .Single()?.InnerText?.Trim() ?? "no rating";
+            rating = GetRating(item);
 
             // //METASCORE
-            metascore = item.Element("div")?
-            .NextSibling?.NextSibling?.Element("div")?
-            .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim() ?? "no metascore";
+            metascore = GetMetaScore(item);
 
             //SUMMARY
-            // summary = item.Element("div")?
-            //     .NextSibling?.NextSibling?.Element("div")?
-            //     .NextSibling?.NextSibling?.NextSibling?.NextSibling?.InnerText?.Trim() ?? "no summary";
-            summary = item.Element("div")?
-                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
-                .PreviousSibling?.PreviousSibling?.PreviousSibling?
-                .PreviousSibling?.PreviousSibling?.PreviousSibling.InnerText.Trim() ?? "no summary";
+            summary = GetSummary(item);
 
             //CAST(DIRECTORS & STARS)
-            cast = item.Element("div")?
-                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
-                .PreviousSibling?.PreviousSibling?.PreviousSibling?
-                .PreviousSibling.InnerText?.Trim() ?? "no cast";
+            cast = GetCast(item);
 
             // Extract Directors
+            const string directorsPattern = @"Director(?:s)?:\s*(.*?)(?:\s*\||$)";
+            const string starsPattern = @"Stars:\s*(.*?)(?:\s*\||$)";
+
             var directorsMatch = Regex.Match(cast, directorsPattern, RegexOptions.Singleline);
             directors = directorsMatch.Groups[1].Value.Trim();
 
@@ -130,7 +112,65 @@ namespace WebScraperForDisneyMovies
             };
         }
 
-        private string GetImage(HtmlNodeCollection metaTags)
+        public string GetCast(HtmlNode item)
+        {
+            return item.Element("div")?
+                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling?
+                .PreviousSibling.InnerText?.Trim() ?? "no cast";
+        }
+
+        public string GetSummary(HtmlNode item)
+        {
+            return item.Element("div")?
+                .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling?
+                .PreviousSibling?.PreviousSibling?.PreviousSibling.InnerText.Trim() ?? "no summary";
+        }
+
+        public string GetMetaScore(HtmlNode item)
+        {
+            return item.Element("div")?
+            .NextSibling?.NextSibling?.Element("div")?
+            .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim() ?? "no metascore";
+        }
+
+        public string GetRating(HtmlNode item)
+        {
+            return item.Element("div")?
+                .NextSibling?.NextSibling?.Element("div")?
+                .Element("div")?
+                .ChildNodes?.Where(d => d.HasClass("ipl-rating-star__rating"))?
+                .Single()?.InnerText?.Trim() ?? "no rating";
+        }
+
+        public HtmlNodeCollection? GetGenreAndRuntime(HtmlNode item)
+        {
+            return item.Element("div")?.NextSibling?.NextSibling?.Element("h3")?
+            .NextSibling?.NextSibling?.ChildNodes;
+        }
+
+        public string GetYear(HtmlNode item)
+        {
+            return item.Element("div")?.NextSibling?.NextSibling?
+            .Element("h3")?.Elements("span")?.Where(i => i.HasClass("lister-item-year"))
+            .Single().InnerText?.Trim() ?? "no year";
+
+        }
+
+        public string GetTitle(HtmlNode item)
+        {
+            return item.Element("div")?.NextSibling?.NextSibling
+            .Element("h3")?.ChildNodes["a"]?.InnerText?.Trim() ?? "no title";
+        }
+
+        public string GetLink(HtmlNode item)
+        {
+            return item.Element("div")?.NextSibling?.NextSibling?
+            .Element("h3")?.ChildNodes["a"]?.Attributes["href"]?.Value?.Trim() ?? "no link";
+        }
+
+        public string GetImage(HtmlNodeCollection metaTags)
         {
             foreach (var metaTag in metaTags)
             {
