@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿#define DATABASE
 
-#define DATABASE
+using System.Diagnostics;
+
 namespace WebScraperForDisneyMovies
 {
     public class Program
