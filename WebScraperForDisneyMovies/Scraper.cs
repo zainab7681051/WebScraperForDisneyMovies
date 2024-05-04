@@ -1,50 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace WebScraperForDisneyMovies
 {
     public class Scraper
     {
         private readonly HtmlWeb _HtmlWeb;
-        public Scraper(HtmlWeb HtmlWeb)
+        private List<HtmlDocument> Tabs;
+        public Scraper()
         {
-            _HtmlWeb = HtmlWeb;
+            _HtmlWeb = new HtmlWeb();
+            Tabs=new();
         }
         public List<Movie> ScrapeData(string site, string list, string xPath)
         {
             List<Movie> movies = new();
             string url = site + list;
-            var doc = _HtmlWeb.Load(url);
-            var docNodes = doc.DocumentNode.SelectNodes(xPath);
+            var docNodes = _HtmlWeb.Load(url).DocumentNode.SelectNodes(xPath);
             if (docNodes is null)
             {
                 throw new NullReferenceException("docNodes is null");
             }
 
-            int nodeCollectionLength = docNodes.ToArray().Length;
 
-            Console.WriteLine("\nScraping the data....");
-            for (int i = 0; i < nodeCollectionLength; i++)
+            Console.WriteLine("\nthis program will take 2 to 3 minutes tops to finish\n");
+            Console.WriteLine("\nanyway, scraping the data!");
+            for (int i = 0; i < docNodes.ToArray().Length; i++)
             {
-                UpdateProgressBar(i, nodeCollectionLength - 1);
+                UpdateProgressBar(i, docNodes.ToArray().Length - 1);
                 Movie? movie = ScrapePage(docNodes[i], site);
                 if (movie is null) continue;
                 movies.Add(movie);
             }
+
+            //IMAGE: get the high def image for each movie poster
+            Console.WriteLine("\nadding high def images...");
+            movies.TrimExcess();
+            for(int i=0; i<movies.Count; i++)
+            { 
+                UpdateProgressBar(i, movies.Count-1);
+                movies[i].image=GetImage(Tabs[i].DocumentNode.SelectNodes("/html/head/meta"));
+            }
+
             Console.WriteLine("\nScraping Stage completed.\n");
             return movies;
         }
 
-        public Movie? ScrapePage(HtmlNode item, string site)
+        private Movie? ScrapePage(HtmlNode item, string site)
         {
             string? title, year, link,
-                image, runtime, genre,
+                runtime, genre,
                 summary, rating, metascore,
                 cast, directors, stars;
 
@@ -52,8 +57,6 @@ namespace WebScraperForDisneyMovies
             {
                 return null;
             }
-            //LINK
-            link = GetLink(item);
 
             //TITLE
             title = GetTitle(item);
@@ -91,17 +94,16 @@ namespace WebScraperForDisneyMovies
             var starsMatch = Regex.Match(cast, starsPattern, RegexOptions.Singleline);
             stars = starsMatch.Groups[1].Value.Trim();
 
-            //IMAGE
-            var newTab = _HtmlWeb.Load(site + link);
-            var metaTags = newTab.DocumentNode.SelectNodes("/html/head/meta");
-            image = GetImage(metaTags);
+            //LINK
+            link = GetLink(item);
+            Tabs.Add(_HtmlWeb.Load(site + link));
 
             return new Movie
             {
                 title = title,
                 year = year,
                 link = link,
-                image = image,
+                //image = image,
                 runtime = runtime,
                 genre = genre,
                 summary = summary,
@@ -112,7 +114,7 @@ namespace WebScraperForDisneyMovies
             };
         }
 
-        public string GetCast(HtmlNode item)
+        private string GetCast(HtmlNode item)
         {
             return item.Element("div")?
                 .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
@@ -120,7 +122,7 @@ namespace WebScraperForDisneyMovies
                 .PreviousSibling.InnerText?.Trim() ?? "no cast";
         }
 
-        public string GetSummary(HtmlNode item)
+        private string GetSummary(HtmlNode item)
         {
             return item.Element("div")?
                 .NextSibling?.NextSibling?.LastChild?.PreviousSibling?
@@ -128,14 +130,14 @@ namespace WebScraperForDisneyMovies
                 .PreviousSibling?.PreviousSibling?.PreviousSibling.InnerText.Trim() ?? "no summary";
         }
 
-        public string GetMetaScore(HtmlNode item)
+        private string GetMetaScore(HtmlNode item)
         {
             return item.Element("div")?
             .NextSibling?.NextSibling?.Element("div")?
             .NextSibling?.NextSibling?.Element("span")?.InnerText?.Trim() ?? "no metascore";
         }
 
-        public string GetRating(HtmlNode item)
+        private string GetRating(HtmlNode item)
         {
             return item.Element("div")?
                 .NextSibling?.NextSibling?.Element("div")?
@@ -144,13 +146,13 @@ namespace WebScraperForDisneyMovies
                 .Single()?.InnerText?.Trim() ?? "no rating";
         }
 
-        public HtmlNodeCollection? GetGenreAndRuntime(HtmlNode item)
+        private HtmlNodeCollection? GetGenreAndRuntime(HtmlNode item)
         {
             return item.Element("div")?.NextSibling?.NextSibling?.Element("h3")?
             .NextSibling?.NextSibling?.ChildNodes;
         }
 
-        public string GetYear(HtmlNode item)
+        private string GetYear(HtmlNode item)
         {
             return item.Element("div")?.NextSibling?.NextSibling?
             .Element("h3")?.Elements("span")?.Where(i => i.HasClass("lister-item-year"))
@@ -158,19 +160,19 @@ namespace WebScraperForDisneyMovies
 
         }
 
-        public string GetTitle(HtmlNode item)
+        private string GetTitle(HtmlNode item)
         {
             return item.Element("div")?.NextSibling?.NextSibling
             .Element("h3")?.ChildNodes["a"]?.InnerText?.Trim() ?? "no title";
         }
 
-        public string GetLink(HtmlNode item)
+        private string GetLink(HtmlNode item)
         {
             return item.Element("div")?.NextSibling?.NextSibling?
             .Element("h3")?.ChildNodes["a"]?.Attributes["href"]?.Value?.Trim() ?? "no link";
         }
 
-        public string GetImage(HtmlNodeCollection metaTags)
+        private string GetImage(HtmlNodeCollection metaTags)
         {
             foreach (var metaTag in metaTags)
             {
@@ -182,6 +184,7 @@ namespace WebScraperForDisneyMovies
             }
             return "no image";
         }
+
         private void UpdateProgressBar(int currentIteration, int totalIterations)
         {
             const int progressBarWidth = 50;
@@ -198,7 +201,7 @@ namespace WebScraperForDisneyMovies
 
             Console.CursorLeft = 0;
             Console.Write(progressBar);
-            Console.CursorLeft = progressBarWidth + 1;
+            Console.CursorLeft = progressBarWidth + 5;
             Console.Write("  " + percentageString);
         }
     }
